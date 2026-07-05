@@ -250,6 +250,23 @@
   .pr-wc-item .wch { font-family: var(--lcars); font-size: .86rem; color: var(--text); text-transform: uppercase; letter-spacing: .02em; }
   .pr-wc-item .wcb { font-size: .82rem; color: var(--text-dim); margin-top: 4px; }
 
+  /* ---------- mockup: painel de resultados agregados ---------- */
+  .dash-console { margin-top: 18px; background: #08080b; border: 1px solid #1c1c22; border-radius: 8px; overflow: hidden; }
+  .dash-body { padding: 20px 18px 6px; display: flex; flex-direction: column; gap: 22px; }
+  .dash-group .dgh { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--peri); margin-bottom: 12px; }
+  .dash-row { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .dash-row .dlabel { font-family: var(--body); font-size: .85rem; color: var(--text-dim); width: 210px; flex: none; }
+  .dash-row .dtrack { flex: 1; height: 10px; background: #0c0c10; border: 1px solid #1c1c22; border-radius: 999px; overflow: hidden; }
+  .dash-row .dfill { height: 100%; width: 0%; border-radius: 999px; background: var(--peri); transition: width 1s cubic-bezier(.2,.7,.2,1); }
+  .dash-row.warn .dfill { background: var(--red); }
+  .dash-row .dval { font-family: var(--mono); font-size: .8rem; color: var(--text); width: 44px; text-align: right; flex: none; }
+  .dash-alert { display: none; border-left: 3px solid var(--red); background: rgba(224,102,102,.08); border-radius: 0 6px 6px 0; padding: 13px 16px; margin: 0 0 14px; font-size: .88rem; color: var(--text-dim); opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+  .dash-alert.show { display: block; }
+  .dash-alert.in { opacity: 1; transform: none; }
+  .dash-alert b { color: var(--red); font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 5px; }
+  .dash-controls { display: flex; gap: 10px; padding: 6px 18px 18px; }
+  @media (max-width: 700px) { .dash-row .dlabel { width: 140px; font-size: .78rem; } }
+
   .reveal { opacity: 0; transform: translateY(16px); animation: rise .8s cubic-bezier(.2,.7,.2,1) forwards; }
   @keyframes rise { to { opacity:1; transform:none; } }
 
@@ -313,9 +330,17 @@
             <span class="go">Ver em detalhe →</span>
           </a>
 
+          <!-- PROJETO 03: Online Eval Matthew -->
+          <a class="card" style="--accent2:var(--blue)" onclick="showDetail('online-eval');return false;" href="#online-eval">
+            <span class="knum">P-03</span>
+            <h3>Online Eval Matthew</h3>
+            <p>Framework de 3 perguntas para avaliação contínua de qualidade conversacional, rodando via LLM-as-judge em 100% das sessões em produção.</p>
+            <span class="go">Ver em detalhe →</span>
+          </a>
+
           <!-- placeholder do próximo projeto -->
           <div class="card soon">
-            <span class="knum">P-03</span>
+            <span class="knum">P-04</span>
             <h3>Próximo projeto</h3>
             <p>Reservado para o próximo case do QuintoAndar.</p>
             <span class="go">Em breve</span>
@@ -607,6 +632,160 @@
 
     </div>
 
+    <!-- ======= DETALHE: ONLINE EVAL MATTHEW ======= -->
+    <div class="detail" id="detail-online-eval">
+
+      <section class="block dhead reveal">
+        <span class="backbtn" onclick="showList();return false;">← Voltar aos projetos</span>
+        <div style="margin-top:22px"></div>
+        <h1>Online Eval Matthew</h1>
+        <div class="sub">QuintoAndar · P-03 · Avaliação contínua de qualidade em produção</div>
+        <div class="stack"><span>Python</span><span>LangChain</span><span>Azure OpenAI</span><span>Claude Sonnet</span><span>LLM-as-judge</span><span>Databricks</span><span>Apache Spark</span><span>Pydantic</span><span>Prompt Engineering</span></div>
+      </section>
+
+      <section class="block dblock o reveal" style="animation-delay:.1s">
+        <h4><span class="ix">01</span> Contexto</h4>
+        <p>O Matthew é o agente de IA de cobranças do QuintoAndar. Ele conduz negociações com inquilinos inadimplentes via WhatsApp e App, com o objetivo de propor acordos de pagamento de forma autônoma. A qualidade dessas conversas era avaliada por auditoria manual: cerca de <strong>69 conversas por mês</strong>, de um universo de <strong>~3.400</strong>. Menos de 2% do volume real.</p>
+        <p style="margin-top:14px">Esse processo não escala e não distingue o tipo de problema: uma conversa em que o Matthew atuou fora do escopo dele recebia o mesmo diagnóstico de uma em que ele tinha tudo para agir e agiu mal. Diagnósticos diferentes exigem donos diferentes, e a auditoria manual não fazia essa distinção.</p>
+      </section>
+
+      <section class="block dblock v reveal" style="animation-delay:.15s">
+        <h4><span class="ix">02</span> O desafio</h4>
+        <p>Definir um framework simples o bastante para rodar em escala, mas que separasse com precisão três problemas de natureza completamente diferente: falha de roteamento (o Matthew nunca deveria ter entrado naquela conversa), falha de produto (o Matthew agiu certo, mas o sistema não tinha o que o usuário precisava) e falha de comportamento (o Matthew tinha como agir bem e não agiu). Tratar os três como a mesma coisa gera ação errada: nenhuma equipe consegue agir bem em cima de um diagnóstico genérico.</p>
+      </section>
+
+      <section class="block dblock p reveal" style="animation-delay:.2s">
+        <h4><span class="ix">03</span> Abordagem</h4>
+        <p>Desenhei um framework de <strong>3 perguntas binárias e independentes</strong>, respondidas por um juiz de IA sobre a transcrição pré-escalação de cada sessão encerrada:</p>
+
+        <table class="dtable" style="margin-top:14px">
+          <tr><th>Pergunta</th><th>O que mede</th><th>Roda em</th></tr>
+          <tr><td class="k">O cliente foi atendido?</td><td>Resposta completa e útil à demanda principal, não se o usuário ficou satisfeito.</td><td class="num">100% das sessões</td></tr>
+          <tr><td class="k">O cliente ficou frustrado?</td><td>Insatisfação expressa por escrito, e se o alvo foi o bot ou a situação.</td><td class="num">100% das sessões</td></tr>
+          <tr><td class="k">Quando não funcionou, por quê?</td><td>Fora de escopo, sem capacidade do produto, ou falha de comportamento.</td><td class="num">Só sessões não atendidas</td></tr>
+        </table>
+
+        <div class="callout">
+          <span class="tag">Por que perguntas independentes</span>
+          <p>A primeira diz se o usuário foi atendido. A segunda diz como ele se sentiu, o que é um eixo separado: dá pra atender bem e mesmo assim deixar frustração pelo caminho. A terceira só entra quando a primeira for não, e aponta pra quem precisa agir: roteamento, produto ou o próprio agente.</p>
+        </div>
+
+        <p style="margin-top:18px">O escopo do Matthew precisou ficar explícito no prompt do juiz, porque a pergunta 3 depende disso pra distinguir falha de roteamento de falha de comportamento:</p>
+
+        <table class="dtable" style="margin-top:14px">
+          <tr><th>Dentro do escopo</th><th>Fora do escopo</th></tr>
+          <tr><td>Faturas em atraso de locação ativa</td><td>Reembolsos de qualquer tipo</td></tr>
+          <tr><td>Negociação e propostas de acordo</td><td>Disputas de utilidades (água, luz, gás)</td></tr>
+          <tr><td>Confirmação de pagamentos recentes</td><td>Alterações contratuais e rescisão</td></tr>
+          <tr><td>Dúvidas sobre IR / informe de rendimentos</td><td>Contestação da legitimidade da dívida</td></tr>
+        </table>
+
+        <p style="margin-top:18px">A avaliação roda dentro da infraestrutura de eval online já existente na plataforma conversacional: um job em lote que executa a cada hora via Databricks e Spark, puxando as sessões encerradas de cada agente configurado. Cada agente roda num host próprio, e cada host segue o mesmo contrato: um runner busca as conversas e executa uma lista de avaliações, e cada avaliação é um par processor + evaluator, o processor extrai o que a avaliação precisa da sessão, o evaluator roda a classificação.</p>
+
+        <div class="pipeline">
+          <span class="step"><b>01</b> Job horário · Databricks/Spark</span><span class="arrow">→</span>
+          <span class="step"><b>02</b> Host Matthew</span><span class="arrow">→</span>
+          <span class="step"><b>03</b> Runner reativado</span><span class="arrow">→</span>
+          <span class="step"><b>04</b> Processor · transcrição + tool calls</span><span class="arrow">→</span>
+          <span class="step"><b>05</b> Evaluator · LLM-as-judge</span><span class="arrow">→</span>
+          <span class="step"><b>06</b> JSON estruturado</span>
+        </div>
+      </section>
+
+      <section class="block dblock g reveal" style="animation-delay:.25s">
+        <h4><span class="ix">04</span> O que construí</h4>
+        <p>Reativei o runner do Matthew no job de eval online e construí o par processor + evaluator específico das 3 perguntas: o processor reaproveita a extração já existente de transcrição pré-escalação e logs de tool calls, e o evaluator roda os 3 prompts de LLM-as-judge (Claude Sonnet, temperatura 0) de forma independente por sessão, retornando classificação e uma justificativa de 2 a 4 frases por pergunta.</p>
+
+        <p style="margin-top:18px">Esta é uma reconstrução do fluxo real de leitura de uma sessão:</p>
+
+        <div class="judge-console">
+          <div class="jc-bar">
+            <div class="dotrow"><span></span><span></span><span></span></div>
+            <span class="jclabel">Simulação · 3 Perguntas · Matthew</span>
+          </div>
+          <div class="jc-body">
+            <div class="jc-chat" id="oeChat">
+              <div class="jc-controls">
+                <button class="jc-btn run" id="oeRun" onclick="runOnlineEval()">▶ Rodar avaliação</button>
+                <button class="jc-btn reset" onclick="resetOnlineEval()">↺ Reiniciar</button>
+              </div>
+            </div>
+            <div class="jc-fields" id="oeFields"></div>
+          </div>
+          <div class="jc-status" id="oeStatus">Conversa simulada e anonimizada · clique em rodar para ver as 3 perguntas classificando a sessão</div>
+        </div>
+        <p class="capt">Simulação ilustrativa. As 3 perguntas rodam de forma independente sobre a mesma transcrição pré-escalação.</p>
+      </section>
+
+      <section class="block dblock o reveal" style="animation-delay:.3s">
+        <h4><span class="ix">05</span> Validação</h4>
+        <p>O eval é calibrado contra anotação humana antes de ir para produção. Na pesquisa conversacional que originou o modelo de perguntas, a calibração chegou a 100% de concordância. Para o Matthew, a meta de entrada é mais conservadora:</p>
+
+        <table class="dtable" style="margin-top:14px">
+          <tr><th>Fase</th><th>Amostra</th><th>Critério</th></tr>
+          <tr><td class="k">Validação inicial</td><td class="num">21 sessões âncora</td><td>≥ 80% de concordância com gabarito humano, por pergunta</td></tr>
+          <tr><td class="k">Expansão de gabarito</td><td class="num">80–100 sessões novas</td><td>Representatividade por tipo de conversa · meta de paridade com Wall-E (94%)</td></tr>
+          <tr><td class="k">Recalibração trimestral</td><td class="num">30–50 sessões novas</td><td>Detecção de drift de modelo ou mudança no perfil de sessões</td></tr>
+        </table>
+
+        <div class="callout">
+          <span class="tag">Quando agir</span>
+          <p>Queda sustentada na taxa de atendimento aciona a leitura da pergunta 3. Frustração com o bot acima de 25% aciona investigação de padrão insistente. Falha de comportamento acima de 40% das sessões não atendidas já justifica iteração de prompt ou regra de negócio. Fora de escopo alto e crescente aponta para o fluxo de roteamento, não para o Matthew.</p>
+        </div>
+
+        <p style="margin-top:18px">É esse cruzamento, distribuição agregada mais limiares de ação, que transforma as 3 perguntas num painel de monitoramento. Uma reconstrução ilustrativa de como isso fica com 30 dias de sessões:</p>
+
+        <div class="dash-console">
+          <div class="jc-bar">
+            <div class="dotrow"><span></span><span></span><span></span></div>
+            <span class="jclabel">Simulação · Painel Agregado · 30 dias</span>
+          </div>
+          <div class="dash-body" id="dashPanel">
+
+            <div class="dash-group">
+              <div class="dgh">Pergunta 1 · O cliente foi atendido?</div>
+              <div class="dash-row" data-target="76"><span class="dlabel">Atendido</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+              <div class="dash-row" data-target="24"><span class="dlabel">Não atendido</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+            </div>
+
+            <div class="dash-group">
+              <div class="dgh">Pergunta 2 · O cliente ficou frustrado?</div>
+              <div class="dash-row" data-target="34"><span class="dlabel">Frustração geral</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+              <div class="dash-row warn" data-target="29"><span class="dlabel">Frustração com o bot</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+            </div>
+
+            <div class="dash-group">
+              <div class="dgh">Pergunta 3 · Diagnóstico das sessões não atendidas</div>
+              <div class="dash-row" data-target="22"><span class="dlabel">Fora de escopo</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+              <div class="dash-row" data-target="35"><span class="dlabel">Sem capacidade do produto</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+              <div class="dash-row warn" data-target="43"><span class="dlabel">Falha de comportamento</span><div class="dtrack"><div class="dfill"></div></div><span class="dval">0%</span></div>
+            </div>
+
+            <div class="dash-alert" id="dashAlert1"><b>⚠ Limiar excedido</b>Frustração com o bot em 29%, acima do limiar de 25%. Investigar sessões com padrão insistente.</div>
+            <div class="dash-alert" id="dashAlert2"><b>⚠ Limiar excedido</b>Falha de comportamento em 43% das sessões não atendidas, acima do limiar de 40%. Volume justifica iteração de prompt.</div>
+
+            <div class="dash-controls">
+              <button class="jc-btn run" id="dashRun" onclick="runDashboard()">▶ Rodar 30 dias</button>
+              <button class="jc-btn reset" onclick="resetDashboard()">↺ Reiniciar</button>
+            </div>
+          </div>
+          <div class="jc-status" id="dashStatus">Volume simulado · clique em rodar para ver a distribuição agregada e os alertas de ação</div>
+        </div>
+        <p class="capt">Simulação ilustrativa com números fictícios. Os limiares (25% e 40%) são os mesmos definidos no framework de decisão.</p>
+      </section>
+
+      <section class="block dblock v reveal" style="animation-delay:.35s">
+        <h4><span class="ix">06</span> Valor da entrega</h4>
+        <p>O framework leva a cobertura de qualidade de <strong>~2% das sessões</strong>, via amostragem manual, para <strong>100%</strong>, rodando dentro da mesma infraestrutura de eval online usada por outros agentes da plataforma. Mais importante que a cobertura: o diagnóstico da pergunta 3 direciona a ação para quem precisa agir, roteamento, produto ou o próprio agente, em vez de devolver um veredito genérico de "deu certo ou não deu".</p>
+        <div class="pipeline">
+          <span class="step">amostragem manual · ~2%</span><span class="arrow">→</span>
+          <span class="step">eval contínua · 100% das sessões</span><span class="arrow">→</span>
+          <span class="step">diagnóstico acionável por dono</span>
+        </div>
+      </section>
+
+    </div>
+
   </main>
 </div>
 
@@ -817,6 +996,136 @@
   }
 
   prRender();
+
+  /* ===== Mockup interativo: Online Eval Matthew (3 perguntas independentes) ===== */
+  var oeScript = [
+    { who:'user', tag:'Inquilino', text:'Quero contestar essa cobrança. Saí do imóvel em março e continuam me cobrando abril.' },
+    { who:'bot', tag:'Matthew', text:'O contrato possui fatura em atraso de R$ 4.200. Temos uma proposta especial de quitação com desconto.' },
+    { who:'user', tag:'Inquilino', text:'Já falei isso antes, não devo nada, entreguei as chaves. Quero falar com alguém responsável.' }
+  ];
+  var oeFieldDefs = [
+    { k:'atendido', v:'Não' },
+    { k:'frustracao', v:'Frustração geral' },
+    { k:'tipo_falha', v:'Fora de escopo' }
+  ];
+  var oeRunning = false;
+
+  function resetOnlineEval(){
+    if(oeRunning) return;
+    document.getElementById('oeChat').innerHTML =
+      '<div class="jc-controls">' +
+      '<button class="jc-btn run" id="oeRun" onclick="runOnlineEval()">▶ Rodar avaliação</button>' +
+      '<button class="jc-btn reset" onclick="resetOnlineEval()">↺ Reiniciar</button>' +
+      '</div>';
+    document.getElementById('oeFields').innerHTML = '';
+    document.getElementById('oeStatus').textContent = 'Conversa simulada e anonimizada · clique em rodar para ver as 3 perguntas classificando a sessão';
+    document.getElementById('oeStatus').classList.remove('done');
+  }
+
+  function runOnlineEval(){
+    if(oeRunning) return;
+    oeRunning = true;
+    var chat = document.getElementById('oeChat');
+    var fieldsBox = document.getElementById('oeFields');
+    var status = document.getElementById('oeStatus');
+    var runBtn = document.getElementById('oeRun');
+    if(runBtn) runBtn.disabled = true;
+    status.classList.remove('done');
+
+    chat.innerHTML = '<div class="jc-controls"><button class="jc-btn run" id="oeRun" disabled>▶ Rodar avaliação</button><button class="jc-btn reset" onclick="resetOnlineEval()">↺ Reiniciar</button></div>';
+    fieldsBox.innerHTML = oeFieldDefs.map(function(f){
+      return '<div class="jc-field" data-k="'+f.k+'"><span class="fk">'+f.k+'</span><span class="fv">—</span></div>';
+    }).join('');
+
+    status.textContent = 'Lendo transcrição pré-escalação...';
+
+    oeScript.forEach(function(m, i){
+      setTimeout(function(){
+        var div = document.createElement('div');
+        div.className = 'jc-msg ' + m.who;
+        div.innerHTML = '<span class="tag">' + m.tag + '</span>' + m.text;
+        chat.insertBefore(div, chat.querySelector('.jc-controls'));
+        requestAnimationFrame(function(){ div.classList.add('in'); });
+      }, 350 * i);
+    });
+
+    var chatDone = 350 * oeScript.length + 300;
+    setTimeout(function(){ status.textContent = 'Sessão encerrada. Rodando as 3 perguntas de forma independente...'; }, chatDone);
+
+    var fields = fieldsBox.querySelectorAll('.jc-field');
+    fields.forEach(function(field, i){
+      setTimeout(function(){
+        field.classList.add('lit');
+        var fv = field.querySelector('.fv');
+        var val = oeFieldDefs[i].v;
+        fv.innerHTML = '<span class="blink"></span>';
+        setTimeout(function(){ fv.textContent = val; }, 260);
+      }, chatDone + 450 + i * 420);
+    });
+
+    var totalDone = chatDone + 450 + fields.length * 420 + 200;
+    setTimeout(function(){
+      status.textContent = '✓ Classificação concluída. Não atendido · frustração geral · falha de roteamento.';
+      status.classList.add('done');
+      if(runBtn) runBtn.disabled = false;
+      oeRunning = false;
+    }, totalDone);
+  }
+
+  /* ===== Mockup interativo: Painel de resultados agregados ===== */
+  var dashRunning = false;
+
+  function resetDashboard(){
+    if(dashRunning) return;
+    document.querySelectorAll('#dashPanel .dfill').forEach(function(f){ f.style.width = '0%'; });
+    document.querySelectorAll('#dashPanel .dval').forEach(function(v){ v.textContent = '0%'; });
+    document.getElementById('dashAlert1').classList.remove('show','in');
+    document.getElementById('dashAlert2').classList.remove('show','in');
+    document.getElementById('dashStatus').textContent = 'Volume simulado · clique em rodar para ver a distribuição agregada e os alertas de ação';
+    document.getElementById('dashStatus').classList.remove('done');
+    document.getElementById('dashRun').disabled = false;
+  }
+
+  function runDashboard(){
+    if(dashRunning) return;
+    dashRunning = true;
+    resetDashboard();
+    var runBtn = document.getElementById('dashRun');
+    runBtn.disabled = true;
+    var status = document.getElementById('dashStatus');
+    status.textContent = 'Processando sessões dos últimos 30 dias...';
+
+    var rows = document.querySelectorAll('#dashPanel .dash-row');
+    rows.forEach(function(row, i){
+      setTimeout(function(){
+        var target = row.getAttribute('data-target');
+        row.querySelector('.dfill').style.width = target + '%';
+        row.querySelector('.dval').textContent = target + '%';
+      }, 220 * i + 250);
+    });
+
+    var barsDone = 220 * rows.length + 750;
+    setTimeout(function(){ status.textContent = 'Distribuição calculada. Verificando limiares de ação...'; }, barsDone);
+
+    setTimeout(function(){
+      var a1 = document.getElementById('dashAlert1');
+      a1.classList.add('show');
+      requestAnimationFrame(function(){ a1.classList.add('in'); });
+    }, barsDone + 500);
+
+    setTimeout(function(){
+      var a2 = document.getElementById('dashAlert2');
+      a2.classList.add('show');
+      requestAnimationFrame(function(){ a2.classList.add('in'); });
+    }, barsDone + 950);
+
+    setTimeout(function(){
+      status.textContent = '✓ 2 limiares excedidos nos últimos 30 dias · ação recomendada';
+      status.classList.add('done');
+      runBtn.disabled = false;
+      dashRunning = false;
+    }, barsDone + 1450);
+  }
 </script>
 </body>
 </html>
